@@ -34,30 +34,39 @@ describe Queries::WorkPackages::Filter::ProjectFilter, type: :model do
     let(:class_key) { :project_id }
 
     describe '#available?' do
-      context 'within a project' do
-        it 'is false' do
-          expect(instance).to_not be_available
+      let(:projects_visible) { true }
+
+      before do
+        allow(Project)
+          .to receive_message_chain(:visible, :active, :exists?)
+                .and_return(projects_visible)
+      end
+
+      shared_examples_for 'filter availability' do
+        context 'when able to see projects' do
+          it 'is true' do
+            expect(instance).to be_available
+          end
+        end
+
+        context 'when not able to see projects' do
+          let(:projects_visible) { false }
+
+          it 'is true' do
+            expect(instance).not_to be_available
+          end
         end
       end
 
-      context 'outside of a project' do
+      context 'when inside a project' do
+        # Used to be always false hence still checking.
+        it_behaves_like 'filter availability'
+      end
+
+      context 'when outside of a project ' do
         let(:project) { nil }
 
-        it 'is true if the user can see project' do
-          allow(Project)
-            .to receive_message_chain(:visible, :active, :exists?)
-            .and_return(true)
-
-          expect(instance).to be_available
-        end
-
-        it 'is true if the user can not see project' do
-          allow(Project)
-            .to receive_message_chain(:visible, :active, :exists?)
-            .and_return(false)
-
-          expect(instance).to_not be_available
-        end
+        it_behaves_like 'filter availability'
       end
     end
 
