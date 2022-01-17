@@ -493,6 +493,7 @@ export class TeamPlannerComponent extends UntilDestroyedMixin implements OnInit,
   }
 
   private toggleQuickAddPane():void {
+    document.getElementsByClassName('fc-showQuickAddPane-button')[0].classList.toggle('-active');
     this.showQuickAddPane.next(!this.showQuickAddPane.getValue());
   }
 }
